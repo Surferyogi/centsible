@@ -5,7 +5,7 @@ behalf of 株式会社エア・リキード・ラボラトリーズ, and reconci
 
 Everything runs on device: documents are read, stored and checked in the browser and are never
 transmitted anywhere. Built to the same pattern as Fortress — standalone GitHub Pages deployment,
-on-device pdf.js parsing, localStorage history with JSON bkp
+on-device pdf.js parsing, localStorage history with JSON backup.
 
 Current build: **v2026:AUG:25-13:53**
 
@@ -36,6 +36,32 @@ In the repository: **Settings → Pages → Build and deployment → Source: Git
 That is the only setting to change. The included workflow at `.github/workflows/deploy.yml` builds
 and publishes on every push to `main`; watch it under the **Actions** tab. First deploy takes a
 couple of minutes.
+
+> **If you upload through the GitHub website rather than git, this will not work.** The web
+> uploader silently skips files and folders whose names begin with a dot, so
+> `.github/workflows/deploy.yml` never arrives, no build runs, and Pages publishes your raw source
+> instead. The symptom is a blank white page, and `https://<user>.github.io/centsible/package.json`
+> returning 200 when it should be 404. Use `git push`, or use the no-build route below.
+
+### Alternative with no Actions and no dotfiles: the `docs/` folder
+
+`docs/` in this repository is a **prebuilt copy of the app**. It needs no workflow, no build step on
+GitHub, and contains nothing that the web uploader will skip.
+
+1. Upload the repository including the `docs/` folder.
+2. **Settings → Pages → Source: Deploy from a branch → Branch: `main`, Folder: `/docs`** → Save.
+
+The site is live within a minute or two.
+
+The trade-off is that `docs/` is build output committed to the repository, so it goes stale unless
+you refresh it. After changing anything in `src/`, run:
+
+```bash
+npm run build:docs
+```
+
+and commit the updated `docs/`. If you later switch Pages to *GitHub Actions*, `docs/` is simply
+ignored and you can delete it.
 
 ### 3. Install it as an app
 
