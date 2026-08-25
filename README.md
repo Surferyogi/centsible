@@ -7,15 +7,15 @@ Everything runs on device: documents are read, stored and checked in the browser
 transmitted anywhere. Built to the same pattern as Fortress — standalone GitHub Pages deployment,
 on-device pdf.js parsing, localStorage history with JSON backup.
 
-Current build: **v2026:AUG:25-07:15**
+Current build: **v2026:AUG:25-13:53**
 
 ---
 
 ## Deploying to GitHub Pages
 
-The repository must be named **`Centsible`**, so the site is served at
-`https://<your-user>.github.io/Centsible/`. That path is baked into `vite.config.js` as
-`base: '/Centsible/'` and **must match the repository name exactly, including case** — if it does
+The repository is named **`centsible`** (lowercase), so the site is served at
+`https://<your-user>.github.io/centsible/`. That path is baked into `vite.config.js` as
+`base: '/centsible/'` and **must match the repository name exactly, including case** — if it does
 not, every asset 404s and the page loads blank.
 
 ### 1. Push the files
@@ -25,7 +25,7 @@ git init
 git add .
 git commit -m "Centsible v2026:AUG:25-07:15"
 git branch -M main
-git remote add origin https://github.com/<your-user>/Centsible.git
+git remote add origin https://github.com/<your-user>/centsible.git
 git push -u origin main
 ```
 
@@ -94,7 +94,8 @@ The employer issues two documents through 株式会社ペイロール:
 |---|---|---|
 | `salary` | 給与明細書 | The monthly payslip |
 | `bonus` | 賞与明細書 | One-off payments — vacation allowance, childcare allowance |
-| `withholding` | 源泉徴収票 | Annual statement. Not a payment: excluded from every aggregate and used only as a control total to reconcile against |
+| `withholding` | 源泉徴収票 | Annual employer statement. Not a payment: excluded from every aggregate, used as a control total |
+| `taxreturn` | 確定申告書 | The filed personal return. The only document capturing salary paid outside Japanese payroll |
 
 They share a layout but not their labels: a bonus prints `Adjustment` **or** `Bonus` for the payment
 itself (2025-01 and 2025-06 use the former, 2026-01 the latter — both are carried), plus `Deduction Total`,
@@ -252,9 +253,13 @@ no backend. Anything saved under the app's former name (Meisai) is migrated acro
 first load. The trade-off is that clearing site data or changing device loses the history, so use
 the JSON backup in Settings.
 
-Twenty-eight documents are installed on first run, transcribed from the supplied images:
-twenty-five monthly payslips between Sep 2023 and Aug 2026, plus three bonus statements. They can be
-cleared from Settings and are not reinstalled afterwards.
+Forty-two documents are installed on first run, transcribed from the supplied images:
+twenty-five monthly payslips between Sep 2023 and Aug 2026, plus four bonus statements, two 源泉徴収票 and two filed 確定申告書.
+They can be cleared from Settings and are not reinstalled afterwards.
+
+Personal identifiers on the returns and statements — マイナンバー, residence card number, home
+address, and family members' names and dates of birth — are deliberately **not** stored. They serve
+no monitoring purpose.
 
 ### Coverage gaps
 
@@ -270,21 +275,56 @@ supplied as documents: Jul 2025 (vacation allowance 2nd instalment, net ¥418,90
 Annual totals are labelled incomplete wherever fewer than twelve monthly payslips are present, so
 they are never mistaken for full-year figures.
 
-## Year-end reconciliation
+## Year-end reconciliation — three layers
 
-Where a 源泉徴収票 is stored, the Year-end tab sums the payslips for that year and compares them
-against the employer's declared totals.
+The Year-end tab reconciles outward through three layers, each the authority for the one inside it:
 
-For 2024, **all twelve monthly payslips are now stored**:
+1. **Payslips** — what this app has stored
+2. **源泉徴収票** — what the employer declared for salary run through Japanese payroll
+3. **確定申告書** — the filed return, which alone captures salary paid *outside* Japanese payroll
 
-| Measure | Per 源泉徴収票 | Stored payslips | Unaccounted |
-|---|---|---|---|
-| Total gross pay | ¥63,973,440 | ¥56,740,340 | ¥7,233,100 |
-| Income tax withheld | ¥22,604,714 | ¥19,497,220 | ¥3,107,494 |
-| Social insurance | ¥2,146,560 | ¥1,676,970 | ¥469,590 |
+### The layer the payslips cannot see
 
-Since every month is present, the remaining gap is entirely 2024 bonus statements. The app says so
-explicitly rather than estimating or apportioning the difference.
+Both filed returns declare **国外払い給与** — salary paid outside Japan, carrying no Japanese
+withholding and appearing on no payslip and on no 源泉徴収票:
+
+| Year | Paid in Japan (源泉徴収票) | 国外払い給与 | Total declared | Overseas share |
+|---|---|---|---|---|
+| 2024 | ¥63,973,440 | ¥1,576,715 | ¥65,550,155 | 2.41% |
+| 2025 | ¥95,832,023 | ¥4,768,698 | ¥100,600,721 | 4.74% |
+
+Because nothing is withheld against it, the tax on this portion falls due when the return is filed
+rather than month by month.
+
+### Settlement on filing
+
+| | 2024 | 2025 |
+|---|---|---|
+| Total tax liability | ¥23,510,618 | ¥39,396,561 |
+| Less tax withheld | −¥22,604,714 | −¥37,082,575 |
+| Less foreign tax credit | −¥112,579 | −¥125,469 |
+| Less 予定納税 prepaid | — | −¥527,000 |
+| **Balance paid on filing** | **¥793,300** | **¥1,661,500** |
+
+Both returns verify internally to the yen, including the 2.1% reconstruction surtax, the 15%
+separate rate on dividends, and the 10% French withholding on Air Liquide dividends.
+
+### Gap between payslips and 源泉徴収票
+
+| Measure | 2024 | 2025 |
+|---|---|---|
+| 源泉徴収票 | ¥63,973,440 | ¥95,832,023 |
+| Stored payslips | ¥56,740,340 | ¥73,348,816 |
+| **Unaccounted** | **¥7,233,100** | **¥22,483,207** |
+
+All twelve monthly payslips are stored for both years, so both gaps are bonus statements not yet
+supplied. The app reports them as unaccounted and never estimates or apportions the difference.
+
+### Residency
+
+Both returns declare **非永住者 (non-permanent resident)** status for the full year, with entry to
+Japan on 2023-10-09. Foreign-source income declared was ¥31,926,253 (2024) and ¥30,777,345 (2025),
+of which ¥23,072,388 and ¥22,579,600 respectively were paid in or remitted to Japan.
 
 ---
 
