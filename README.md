@@ -5,7 +5,7 @@ behalf of 株式会社エア・リキード・ラボラトリーズ, and reconci
 
 Everything runs on device: documents are read, stored and checked in the browser and are never
 transmitted anywhere. Built to the same pattern as Fortress — standalone GitHub Pages deployment,
-on-device pdf.js parsing, localStorage history with JSON backup.
+on-device pdf.js parsing, localStorage history with JSON bkp
 
 Current build: **v2026:AUG:25-13:53**
 
